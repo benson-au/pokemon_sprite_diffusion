@@ -1,5 +1,5 @@
 # T-DDPM
-A transformer based implementation of the DDPM model from
+A transformer based implementation of the diffusion model from
 
 > **Ho, Jonathan and Jain, Ajay and Abbeel, Pieter.**  
 > *Denoising Diffusion Probabilistic Models*. Advances in Neural Information Processing Systems **33** (2020).  
