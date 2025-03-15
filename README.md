@@ -5,9 +5,9 @@ A transformer based implementation of the diffusion model from
 > *Denoising Diffusion Probabilistic Models*. Advances in Neural Information Processing Systems **33** (2020).  
 > [https://arxiv.org/abs/2006.11239](https://arxiv.org/abs/2006.11239)
 
-In particular, we replace the U-Net in the denoising network in the reverse diffusion process with a transformer encoder. We also include options for the [cosine noise schedule](https://arxiv.org/pdf/2102.09672#equation.3.17) and the [sparse sampling schedule](https://arxiv.org/pdf/2102.09672#section.4) from
+In particular, we replace the U-Net in the denoising network in the reverse diffusion process with a transformer encoder. We also include options for the [cosine noise schedule](https://arxiv.org/pdf/2102.09672#equation.3.17) from
 
-> **Nichol, Alexander Quinn and Dhariwal, Prafulla.**  
+> **Nichol, Alexander Quinn and Dhariwal, Prafulla.**   
 > *Improved Denoising Diffusion Probabilistic Models.* Proceedings of the 38th International Conference on Machine Learning, PMLR **139**:8162-8171, 2021.  
 > [https://arxiv.org/abs/2102.09672](https://arxiv.org/abs/2102.09672)
 
