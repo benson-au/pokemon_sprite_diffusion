@@ -220,7 +220,7 @@ def batch_to_pil(
             are not saved.
         file_format (Optional[str], optional): The format for the PIL images if they are to be saved (e.g., "PNG" or "JPEG").
         base_file_name (Optional[str], optional): The base file name for the PIL images if they are to be saved.
-            PIL images will be saved as f"{base_filename}_{idx:03d}.{file_format.lower()}".
+            PIL images will be saved as f"{base_file_name}_{idx:03d}.{file_format.lower()}".
     
     Returns:
         List[Image.Image]: A list of PIL images.
@@ -234,8 +234,8 @@ def batch_to_pil(
     if output_folder:
         os.makedirs(output_folder, exist_ok=True)
         logging.info(f"Output folder created or already exists: {output_folder}")
-        for img in pil_images:
-            filename = f"{base_filename}_{idx:03d}.{file_format.lower()}"
+        for idx, img in enumerate(pil_images):
+            filename = f"{base_file_name}_{idx:03d}.{file_format.lower()}"
             output_path = os.path.join(output_folder, filename)
             img.save(output_path, file_format)
         
