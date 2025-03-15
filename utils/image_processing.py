@@ -4,6 +4,7 @@ from PIL import Image
 from typing import List, Optional, Tuple
 import torch
 from torchvision import transforms
+from tqdm import tqdm
 
 # Configure logging
 logging.basicConfig(
@@ -19,7 +20,7 @@ def resize_image(
     output_folder: Optional[str] = None,
     inplace: bool = False,
     verbose: bool = True
-) -> None:
+) -> bool:
     """
     Resizes an image to have the specified width and height.
     
@@ -31,6 +32,9 @@ def resize_image(
             Defaults to None, in which case the resized image is placed in the same folder as the original image.
         inplace (bool, optional): If True, overwrite the original image. Defaults to False.
         verbose (bool, optional): If True, a log message is created upon successful resizing. Defaults to True.
+    
+    Returns:
+        bool: True if able to successfully resize image, False otherwise.
     """
     try:
         with Image.open(image_path) as image:
@@ -47,11 +51,13 @@ def resize_image(
                 output_path: str = os.path.join(output_folder, new_file_name) if output_folder else os.path.join(directory, new_file_name)
                 resized_image.save(output_path)
                 if verbose:
-                	logging.info(f"Resized image saved to {output_path}")
+                    logging.info(f"Resized image saved to {output_path}")
+        return True
     except FileNotFoundError:
         logging.error(f"Error: Image file not found at {image_path}")
     except Exception as e:
         logging.error(f"An error occurred while resizing image at {image_path}: {e}")
+    return False
 
 def resize_images(
     new_width: int,
@@ -68,26 +74,36 @@ def resize_images(
         new_height (int): The new height of the images.
         image_folder (str, optional): The path to the folder containing the images.
             Defaults to the current working directory.
-        output_folder (Optional[str], optional): The destination folder for the resized images.
+        output_folder (Optional[str], optional): The path for the resized images.
             If provided and doesn't exist, it will be created. Defaults to None, in which case the resized images
             are placed in the same folder as the original images.
         inplace (bool, optional): If True, overwrite the original images. Defaults to False.
     """
+    file_list = [filename for filename in os.listdir(image_folder)
+             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
+    
+    if not file_list:
+        logging.warning(f"No images found in folder: {image_folder}")
+        return
+    
     if output_folder:
         os.makedirs(output_folder, exist_ok=True)
         logging.info(f"Output folder created or already exists: {output_folder}")
     
     resized_count = 0
-    for filename in os.listdir(image_folder):
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-            image_path: str = os.path.join(image_folder, filename)
-            resize_image(new_width, new_height, image_path, output_folder, inplace, False)
+    failed_count = 0
+    for filename in tqdm(file_list, desc="Resizing images"):
+        image_path: str = os.path.join(image_folder, filename)
+        success = resize_image(new_width, new_height, image_path, output_folder, inplace, False)
+        if success:
             resized_count += 1
+        else:
+            failed_count += 1
     
-    if not resized_count:
-        logging.warning(f"No images found in folder: {image_folder}")
+    if resized_count and not failed_count:
+        logging.info(f"Successfully resized {resized_count} images to size {new_width}x{new_height}.")
     else:
-    	logging.info(f"Successfully resized {resized_count} images to size {new_width}x{new_height}.")
+        logging.info(f"Successfully resized {resized_count} images to size {new_width}x{new_height}. Failed to resize {failed_count} images.")
 
 def check_image_sizes(
     target_width: int,
@@ -121,7 +137,7 @@ def check_image_sizes(
                 logging.error(f"Error processing '{filename}': {e}")
                 error_processing += 1
     if incorrect or error_processing:
-    	logging.info(f"{incorrect} image(s) found with unexpected size, unable to process {error_processing} image(s).") 
+        logging.info(f"{incorrect} image(s) found with unexpected size, unable to process {error_processing} image(s).") 
     return not (incorrect or error_processing)
 
 def load_images_tensor(
@@ -136,12 +152,13 @@ def load_images_tensor(
     
     Args:
         folder_path (str, optional): The directory where the images are stored.
-        	Defaults to the current working directory.
+            Defaults to the current working directory.
         image_size (Optional[Tuple[int, int]]): If provided, resize each image to this size (width, height).
         mode (str): The color mode to convert the images to (e.g., "RGBA" or "RGB").
         
     Returns:
         torch.Tensor: A tensor of shape (num_images, C, H, W), where C is 4 for "RGBA" or 3 for "RGB".
+            For a given image and a given channel, the values of the tensor lie in the interval [-1, 1].
     """
     image_tensors = []
     
@@ -166,6 +183,64 @@ def load_images_tensor(
     
     return torch.stack(image_tensors)
 
+def tensor_to_pil(
+    tensor: torch.Tensor
+) -> Image.Image:
+    """
+    Converts a (single) image tensor with values in [-1, 1] to a PIL Image.
+    
+    Args:
+        tensor (torch.Tensor): A tensor of shape (C, H, W) with values in [-1, 1].
+        
+    Returns:
+        Image.Image: A PIL image with pixel values in [0, 255].
+    """
+    # Invert the transformation: map [-1,1] to [0,1]
+    tensor = (tensor + 1) / 2.0
+    # Clamp the tensor to ensure the values are within [0,1]
+    tensor = tensor.clamp(0, 1)
+    # Convert to a PIL image using ToPILImage.
+    pil_image = transforms.ToPILImage()(tensor.cpu())
+    return pil_image
+
+def batch_to_pil(
+    batch: torch.Tensor,
+    output_folder: Optional[str] = None,
+    file_format: Optional[str] = None,
+    base_file_name: str = 'image',
+) -> List[Image.Image]:
+    """
+    Converts a batch of image tensors with values in [-1, 1] to a list of PIL images.
+    Intended to invert the transformation from load_images_tensor().
+    
+    Args:
+        batch (torch.Tensor): A tensor of shape (num_images, C, H, W) with values in [-1, 1].
+        output_folder (Optional[str], optional): The output folder for the PIL images.
+            If provided and doesn't exist, it will be created. Defaults to None, in which case the PIL images
+            are not saved.
+        file_format (Optional[str], optional): The format for the PIL images if they are to be saved (e.g., "PNG" or "JPEG").
+        base_file_name (Optional[str], optional): The base file name for the PIL images if they are to be saved.
+            PIL images will be saved as f"{base_filename}_{idx:03d}.{file_format.lower()}".
+    
+    Returns:
+        List[Image.Image]: A list of PIL images.
+    """
+    pil_images = []
+    # Ensure the batch is on CPU and iterate over the batch dimension.
+    for img_tensor in batch.cpu():
+        pil_images.append(tensor_to_pil(img_tensor))
+    
+    # If output_folder is provided, save PIL images to output_folder.
+    if output_folder:
+        os.makedirs(output_folder, exist_ok=True)
+        logging.info(f"Output folder created or already exists: {output_folder}")
+        for img in pil_images:
+            filename = f"{base_filename}_{idx:03d}.{file_format.lower()}"
+            output_path = os.path.join(output_folder, filename)
+            img.save(output_path, file_format)
+        
+    return pil_images
+
 # Testing block
 if __name__ == "__main__":
     # Example test for load_images_tensor
@@ -174,4 +249,3 @@ if __name__ == "__main__":
         logging.info(f"Loaded tensor shape: {images.shape}")
     except Exception as e:
         logging.error(f"Error loading images: {e}")
-
