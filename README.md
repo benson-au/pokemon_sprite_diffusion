@@ -17,6 +17,9 @@ Our denoising architecture can be visualized as follows:
 
 As a demonstration, we train our model on a dataset of Pok&eacute;mon images. Contrary to the [old motto](https://www.youtube.com/watch?v=R4GIyJxvk94) from the first season of the Pok&eacute;mon anime, we do not aim to be "the very best, like no one ever was". Instead, we train a relatively small model (X parameters) on a subset of images from [PokeAPI/sprites repository (official-artwork)](https://github.com/PokeAPI/sprites/tree/master/sprites/pokemon/other/official-artwork): we remove duplicates, Mega Pok&eacute;mon, Gigantamax Pok&eacute;mon, and make some other minor editorial choices. The resulting dataset has 1293 - 158 = 1135 images. We scale the images, originally 475x475 pixels, to 256x256 pixels. We include the full list of parameter choices below. We train our model for N epochs. The resulting model weights are located at . Despite the small size of both our model and the training set, we find that the model outputs . Our experiment can be fully replicated using the following block of code:
 
+Different models for different generations? (gen 1, gen 2, gen 3-5)
+Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epochs) 
+
 ### Model Parameters
 
 #### DiffusionTransformer Parameters
