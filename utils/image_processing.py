@@ -23,6 +23,7 @@ def resize_image(
 ) -> bool:
     """
     Resizes an image to have the specified width and height.
+    If the image already has the specified width and height, it is not resized.
     
     Args:
         new_width (int): The new width of the image.
@@ -38,6 +39,12 @@ def resize_image(
     """
     try:
         with Image.open(image_path) as image:
+            # Check if the image already has the desired dimensions.
+            if image.size == (new_width, new_height):
+                if verbose:
+                    logging.info(f"Image {image_path} already has dimensions {new_width}x{new_height}. Skipping resize.")
+                return True
+                
             resized_image = image.resize((new_width, new_height), Image.LANCZOS)
             
             if inplace:
@@ -68,6 +75,7 @@ def resize_images(
 ) -> None:
     """
     Resizes all images in a folder to have the specified width and height.
+    If an image already has the specified width and height, it is not resized.
     
     Args:
         new_width (int): The new width of the images.
@@ -91,19 +99,29 @@ def resize_images(
         logging.info(f"Output folder created or already exists: {output_folder}")
     
     resized_count = 0
+    skipped_count = 0
     failed_count = 0
-    for filename in tqdm(file_list, desc="Resizing images"):
-        image_path: str = os.path.join(image_folder, filename)
-        success = resize_image(new_width, new_height, image_path, output_folder, inplace, False)
+    
+    for filename in tqdm(file_list, desc="Processing images"):
+        image_path = os.path.join(image_folder, filename)
+        try:
+            with Image.open(image_path) as image:
+                # Check if the image already has the desired dimensions.
+                if image.size == (new_width, new_height):
+                    skipped_count += 1
+                    continue
+        except Exception as e:
+            logging.error(f"Could not open image {image_path}: {e}")
+            failed_count += 1
+            continue
+        
+        success = resize_image(new_width, new_height, image_path, output_folder, inplace, verbose=False)
         if success:
             resized_count += 1
         else:
             failed_count += 1
-    
-    if resized_count and not failed_count:
-        logging.info(f"Successfully resized {resized_count} images to size {new_width}x{new_height}.")
-    else:
-        logging.info(f"Successfully resized {resized_count} images to size {new_width}x{new_height}. Failed to resize {failed_count} images.")
+
+    logging.info(f"Processing complete. Resized: {resized_count} images, Skipped: {skipped_count} images, Failed: {failed_count} images.")
 
 def check_image_sizes(
     target_width: int,
@@ -143,7 +161,7 @@ def check_image_sizes(
 def load_images_tensor(
     folder_path: str = './',
     image_size: Optional[Tuple[int, int]] = None,
-    mode: str = "RGBA"
+    mode: str = "RGB"
 ) -> torch.Tensor:
     """
     Loads all images in the given folder, converts them to the specified mode (and optionally to the specified size),
