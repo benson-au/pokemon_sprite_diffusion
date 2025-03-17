@@ -33,7 +33,7 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | emb_dim      |  288   | Embedding dimension for patch representations. |
 | depth        |  16    | Number of transformer layers. |
 | nheads       |  8     | Number of attention heads per layer. |
-| mlp_ratio    |  4.0   | Ratio between the MLP hidden dimension and the embedding dimension. |
+| mlp_ratio    |  4     | Ratio between the MLP hidden dimension and the embedding dimension. |
 
 #### GaussianDiffusion Parameters
 
