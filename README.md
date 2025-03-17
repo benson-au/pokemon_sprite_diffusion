@@ -44,7 +44,7 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | schedule   | [cosine](https://arxiv.org/pdf/2102.09672#equation.3.17) | Noise schedule type. |
 
 ## Complications and suggestions for future directions
-The model is limited by, among other things, computing resources and the paucity of samples. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are of similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
+The model is limited by, among other things, computing resources and the paucity of samples. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are all of a similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
 
 The small dataset also leads to issues during image generation. In particular, after transforming the dataset using transforms.ToTensor() and linearly scaling the values to the range [-1, 1], the resulting tensor has nontrivial channel means [0.4799, 0.3649, 0.3370]. Thus, starting the reverse diffusion process from a zero mean Gaussian seems inappropriate. Indeed, this leads to poor performance, even on the fully trained model. We consider two remedies for this:
 
