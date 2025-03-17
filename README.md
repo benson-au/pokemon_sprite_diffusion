@@ -1,4 +1,4 @@
-# Pok&eacute;mon Sprite Diffusion
+# Pok&eacute;mon sprite diffusion
 (INSERT BEST IMAGE GENERATION HERE)
 
 We implement a simple version of the diffusion model from
@@ -17,13 +17,13 @@ We train our model on a subset of the Pok&eacute;mon sprites from the second gen
 
 Contrary to the [motto](https://www.youtube.com/watch?v=R4GIyJxvk94) from the first season of the Pok&eacute;mon anime, we do not aim to be "the very best, like no one ever was". Instead, we train a relatively small model with N parameters for 5000 epochs. We include the full list of parameter choices below. The resulting model weights are located at .
 
-## Model Generations
+## Model generations
 
 Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epochs) 
 
-## Model Parameters
+## Model parameters
 
-#### DiffusionTransformer Parameters
+#### DiffusionTransformer parameters
 
 | Parameter    | Value  | Description |
 |--------------|--------|-------------|
@@ -35,7 +35,7 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | nheads       |  8     | Number of attention heads per layer. |
 | mlp_ratio    |  4     | Ratio between the MLP hidden dimension and the embedding dimension. |
 
-#### GaussianDiffusion Parameters
+#### GaussianDiffusion parameters
 
 | Parameter  | Value         | Description |
 |------------|---------------|-------------|
@@ -43,11 +43,13 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | timesteps  | 1000          | Number of diffusion steps. |
 | schedule   | [cosine](https://arxiv.org/pdf/2102.09672#equation.3.17) | Noise schedule type. |
 
-## Complications and suggestions for future directions
+## Complication and remedy
+The small dataset leads to issues during image generation. In particular, after transforming the dataset using `torchvision.transforms.ToTensor()` and linearly scaling the values to the range `[-1, 1]`, the resulting tensor `pokemon_images` (of shape `(750, 3, 64, 64`)) has nontrivial channel means `[0.4799, 0.3649, 0.3370]`. Thus, starting the reverse diffusion process from a zero mean Gaussian seems inappropriate. Indeed, this leads to poor empirical performance. We remedy this by adding `means = pokemon_images.mean(dims=(0, 2, 3))` to our initial white noise.
+
+(PICTURE OF FIXED VERSUS UNFIXED)
+
+## Future directions
 The model is limited by, among other things, computing resources and the paucity of samples. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are all of a similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
 
-The small dataset also leads to issues during image generation. In particular, after transforming the dataset using transforms.ToTensor() and linearly scaling the values to the range [-1, 1], the resulting tensor has nontrivial channel means [0.4799, 0.3649, 0.3370]. Thus, starting the reverse diffusion process from a zero mean Gaussian seems inappropriate. Indeed, this leads to poor empirical performance. We consider two remedies for this:
-
-## Data Sources
-
+## Data sources
 Training images used in this project were obtained from the [PokeAPI/sprites repository](https://github.com/PokeAPI/sprites).
