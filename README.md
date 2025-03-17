@@ -1,4 +1,6 @@
 # Pok&eacute;mon Sprite Diffusion
+(INSERT BEST IMAGE GENERATION HERE)
+
 We implement a simple version of the diffusion model from
 
 > **Ho, Jonathan and Jain, Ajay and Abbeel, Pieter.**  
@@ -41,7 +43,7 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | timesteps  | 1000          | Number of diffusion steps. |
 | schedule   | [cosine](https://arxiv.org/pdf/2102.09672#equation.3.17) | Noise schedule type. |
 
-## Suggestions for future directions
+## Complications and suggestions for future directions
 The model is limited by, among other things, computing resources and the paucity of samples. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are of similar style and can reasonably be lumped together to produce a much larger training dataset.
 
 ## Data Sources
