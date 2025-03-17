@@ -44,7 +44,7 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | schedule   | [cosine](https://arxiv.org/pdf/2102.09672#equation.3.17) | Noise schedule type. |
 
 ## Complication and remedy
-The small dataset leads to issues during image generation. In particular, after transforming the dataset using `torchvision.transforms.ToTensor()` and linearly scaling the values to the range `[-1, 1]`, the resulting tensor `pokemon_images` (of shape `(750, 3, 64, 64`)) has nontrivial channel means `[0.4799, 0.3649, 0.3370]`. Thus, starting the reverse diffusion process from a zero mean Gaussian seems inappropriate. We remedy this by adding `means = pokemon_images.mean(dims=(0, 2, 3))` to our initial white noise. We observe substantial improvements in the empirical performance of the model with this minor modification.
+The lack of diversity in our small dataset leads to stability issues during image generation. In particular, the model is highly sensitive to the standard Gaussian input `noise` (of shape `(batch_size, in_channels, W, H)`). We remedy this by normalizing `noise -= noise.mean(dim = 0)`. We observe substantial improvements in the empirical performance of the model with this minor modification.
 
 (PICTURE OF FIXED VERSUS UNFIXED)
 
