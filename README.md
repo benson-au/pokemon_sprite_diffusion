@@ -1,7 +1,7 @@
 # Pok&eacute;mon Sprite Diffusion
 (INSERT BEST IMAGE GENERATION HERE)
 
-We implement a simplified version of the diffusion model from
+We implement a simple version of the diffusion model from
 
 > **Ho, Jonathan and Jain, Ajay and Abbeel, Pieter.**  
 > *Denoising Diffusion Probabilistic Models*. Advances in Neural Information Processing Systems **33** (2020).  
