@@ -1,5 +1,4 @@
-# Pok&eacute;mon sprite diffusion
-(INSERT BEST IMAGE GENERATION HERE)
+# Pok&eacute;mon sprite diffusion (GIFS HERE)
 
 We implement a simple version of the diffusion model from
 
