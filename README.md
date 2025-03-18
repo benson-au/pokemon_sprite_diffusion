@@ -61,7 +61,7 @@ In principal, the same issue applies to the channel means of the noise. One can 
 - Approach 3: compute the arithmetic mean over the last `N` timesteps for `N` relatively small `forward_statistics[-N:].mean(dim=0)`. This has the advantage of producing a smaller shift than Approach 1 if `N` is chosen to be somewhere in the range of `[1,10]`  but did not lead to any improvement in image quality.
 
 ## Future directions
-The model is limited by, among other things, computing resources and the limited number of sprites. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are all of a similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
+The model is limited by, among other things, computing resources and the shortage of sprites. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are all of a similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
 
 ## Data sources
 Training images used in this project were obtained from the [PokeAPI/sprites repository](https://github.com/PokeAPI/sprites).
