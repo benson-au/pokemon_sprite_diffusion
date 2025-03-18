@@ -1,1 +1,1 @@
-Examples of image generations. We have chosen the best examples produced by the model.
+Examples of image generations. We import the model and start generating images with torch.manual_seed(2).
