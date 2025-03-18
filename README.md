@@ -50,7 +50,7 @@ The paucity of images in our dataset leads to sampling issues during training, w
   noise *= torch.sqrt(harmonic_mean)
 </pre>
 
-We observe substantial improvements in the empirical performance of the model with this minor modification. In fact, the harmonic mean of the variance schedule is quite small `harmonic_mean = tensor(0.1072)` and one can try to simply generate images with `torch.zeros()`. The results differ only slightly, though they seem to favor the noisy input.
+We observe substantial improvements in the empirical performance of the model with this minor modification. In fact, the harmonic mean of the variance schedule is quite small `harmonic_mean = tensor(0.1072)` and one might think to simply try generating images with `torch.zeros()`. The results differ slightly and seem to favor the noisy input.
 
 (INCLUDE COMPARISON)
 
