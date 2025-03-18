@@ -52,15 +52,13 @@ The paucity of images in our dataset leads to sampling issues during training, w
 
 We observe substantial improvements in the empirical performance of the model with this minor modification. In fact, the harmonic mean of the variance schedule is quite small `harmonic_mean = tensor(0.1072)` and one might think to simply try generating images with `torch.zeros()`. The results differ slightly and seem to favor the noisy input.
 
-(INCLUDE COMPARISON)
+(INCLUDE TWO ROWS FOR COMPARISON)
 
 In principal, the same issue applies to the channel means of the noise. One can shift the mean to compensate for this, but we did not find any improvements in performance for various approaches. We document our attempts and the outcomes below: for each timestep, we start by computing the arithmetic mean over each channel for each image in the dataset (the resulting tensor `forward_statistics` has shape (timesteps, channels, W, H))
 
 - Approach 1: compute the arithmetic mean over the timesteps `forward_statistics.mean(dim=0)`. Using this as the mean of our noise created too large of a shift and resulted in entirely white images. Note that `forward_statistics.mean() = tensor(0.2494)`.
 - Approach 2: compute the harmonic mean over the timesteps `1/((1/forward_statistics).mean(dim=0))`. The resulting tensor has `.abs().max() = tensor(4.3705e-05)` and does not produce noticeably differences during inference.
 - Approach 3: compute the arithmetic mean over the last `N` timesteps for `N` relatively small `forward_statistics[-N:].mean(dim=0)`. This has the advantage of producing a smaller shift than Approach 1 if `N` is chosen to be somewhere in the range of `[1,10]`  but did not lead to any improvement in image quality.
-
-(PICTURE OF FIXED VERSUS UNFIXED)
 
 ## Future directions
 The model is limited by, among other things, computing resources and the limited number of sprites. One could consider enlarging the dataset by including sprites from Generation I, but the style of the sprites is inconsistent with Generation II. Generations III-V are all of a similar style and can reasonably be lumped together to produce a much larger dataset (3000+ images).
