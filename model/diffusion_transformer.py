@@ -6,7 +6,7 @@ import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 import time
-from utils.image_processing import batch_to_pil, tensor_to_pil
+from pokemon_sprite_diffusion.utils.image_processing import batch_to_pil, tensor_to_pil
 from typing import List, Tuple, Optional, Union
 import os
 from PIL import Image
