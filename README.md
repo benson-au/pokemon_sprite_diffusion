@@ -44,7 +44,13 @@ Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epoc
 | schedule   | [cosine](https://arxiv.org/pdf/2102.09672#equation.3.17) | Noise schedule type. |
 
 ## Complication and remedy
-The lack of diversity in our small dataset leads to stability issues during image generation. In particular, the model is highly sensitive to the standard Gaussian input `noise` (of shape `(batch_size, in_channels, W, H)`). We remedy this by normalizing `noise -= noise.mean(dim = 0)`. We observe substantial improvements in the empirical performance of the model with this minor modification.
+The paucity of images in our dataset leads to sampling issues during training, which propagate to stability issues during inference. In particular, with only 750 images and 1000 timesteps, each timestep is only expected to be chosen .75 times during any given epoch. Thus, the model is less likely to be trained on the highest variance distortions of the dataset. Empirically, we find that the model is highly sensitive to the variance of the Gaussian input `noise` during inference. A standard Gaussian leads to poor image quality, very often of a uniform color. We remedy this by scaling the noise to have the same variance as the harmonic mean of the variance schedule:
+<pre>
+  harmonic_mean = 1/((1/(1-diffusion.alphas_cumprod)).mean())
+  noise *= torch.sqrt(harmonic_mean)
+</pre>
+
+We observe substantial improvements in the empirical performance of the model with this minor modification.
 
 (PICTURE OF FIXED VERSUS UNFIXED)
 
