@@ -1,4 +1,4 @@
-# Pok&eacute;mon sprite diffusion (GIFS HERE)
+# Pok&eacute;mon sprite diffusion ![My Animation](./images/ddpkm.gif)
 
 We implement a simple version of the diffusion model from
 
