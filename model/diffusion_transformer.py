@@ -355,7 +355,6 @@ class GaussianDiffusion(nn.Module):
             
             if t % save_intermediate != 0:
                     progression.append(x)
-            torch.cat(progression, dim=0)
         
         else:
             for t in tqdm(reversed(sample_steps), desc="Reverse diffusion", total=len(sample_steps)):
@@ -381,7 +380,7 @@ class GaussianDiffusion(nn.Module):
                 
         if return_pil:
             if save_intermediate:
-                return batch_to_pil(x)
+                return batch_to_pil(torch.cat(progression, dim=0))
             else:
                 return tensor_to_pil(x.squeeze(0))
         
@@ -397,7 +396,8 @@ def train_diffusion(
     device: torch.device,
     epochs: int = 100,
     save_intermediate: Optional[int] = None,
-    logdir: str = './weights'
+    logdir: str = './weights',
+    timestep_range: Optional[Tuple[int, int]] = None,
 ) -> None:
     """
     Train the diffusion model.
@@ -408,6 +408,9 @@ def train_diffusion(
         optimizer (torch.optim.Optimizer): Choice of optimizer (e.g., optimizer = torch.optim.Adam(diffusion.denoise_fn.parameters(), lr=1e-4))
         device (torch.device): Device to train on.
         epochs (int): Number of training epochs.
+        timestep_range (Optional[Tuple[int, int]], optional): If provided, the model is only trained on timesteps in the range timestep_range.
+            Otherwise, the training defaults to the entire range of timesteps [0, diffusion.timesteps].
+            For use in finetuning on later times.
         save_intermediate (Optional[int], optional): If provided, save the denoising function's parameters every save_intermediate epochs.
             Otherwise, does not save any intermediate denoisers.
             Uses the same path as logdir.
@@ -440,15 +443,120 @@ def train_diffusion(
         }
     }    
     
+    if timestep_range:
+        assert (timestep_range[0] >= 0 and timestep_range[1] <= diffusion.timesteps), "Can only sample times in range(0, diffusion.timesteps)"
+    else:
+        timestep_range = (0, diffusion.timesteps)
+    
     for epoch in range(epochs):
         epoch_loss = 0.0
         # Wrap the dataloader with tqdm for progress monitoring.
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}", leave=True)
-
+        
         for batch_idx, batch in enumerate(progress_bar):
             batch = batch.to(device)
             # Sample random timesteps for each image in the batch.
-            t = torch.randint(0, diffusion.timesteps, (batch.size(0),), device=device)
+            t = torch.randint(timestep_range[0], timestep_range[1], (batch.size(0),), device=device)
+            
+            optimizer.zero_grad()
+
+            # Use mixed precision if available.
+            if scaler is not None:
+                with torch.autocast('cuda'):
+                    loss = diffusion.p_losses(batch, t)
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss = diffusion.p_losses(batch, t)
+                loss.backward()
+                optimizer.step()
+            
+            epoch_loss += loss.item()
+            # Uncomment to update progress bar with the latest loss.
+            # progress_bar.set_postfix(loss=f"{loss.item():.4f}")
+        
+        avg_loss = epoch_loss / len(dataloader)
+        loss_record_by_epoch.append(avg_loss)
+        if (epoch + 1) % 50 == 0:
+            tqdm.write(f"Epoch {epoch+1}/{epochs} - Average Loss: {avg_loss:.4f}")
+    
+        if save_intermediate and ((epoch+1) % save_intermediate == 0):
+            logpath = os.path.join(logdir, f'diffusion_state_dict_{epoch+1}_of_{epochs}_' + time.strftime("%d-%m-%Y_%H-%M-%S") + ".pth")    
+            checkpoint["diffusion_state_dict"] = diffusion.state_dict()
+            torch.save(checkpoint, logpath)
+
+    if save_intermediate and (epochs % save_intermediate):
+        logpath = os.path.join(logdir, f'diffusion_state_dict_{epochs}_of_{epochs}_' + time.strftime("%d-%m-%Y_%H-%M-%S") + ".pth")
+        checkpoint["diffusion_state_dict"] = diffusion.state_dict()
+        torch.save(checkpoint, logpath)
+    loss_array = np.array(loss_record_by_epoch)
+    np.save(os.path.join(logdir, "loss_record" + time.strftime("%d-%m-%Y_%H-%M-%S") + ".npy"), loss_array)
+
+def late_train_diffusion(
+    diffusion: GaussianDiffusion,
+    dataloader: DataLoader,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    time_weights: torch.Tensor,    
+    epochs: int = 100,
+    save_intermediate: Optional[int] = None,
+    logdir: str = './weights'
+) -> None:
+    """
+    Train the diffusion model.
+
+    Args:
+        diffusion (GaussianDiffusion): The diffusion wrapper.
+        dataloader (DataLoader): DataLoader for training data.
+        optimizer (torch.optim.Optimizer): Choice of optimizer (e.g., optimizer = torch.optim.Adam(diffusion.denoise_fn.parameters(), lr=1e-4))
+        device (torch.device): Device to train on.
+        epochs (int): Number of training epochs.
+        time_weights (torch.Tensor): The weights for the timesteps in range(0, diffusion.timesteps), of shape (diffusion.timesteps,).
+            Will be used to sample a multinomial distribution.
+        save_intermediate (Optional[int], optional): If provided, save the denoising function's parameters every save_intermediate epochs.
+            Otherwise, does not save any intermediate denoisers.
+            Uses the same path as logdir.
+        logdir (str, optional): Where to save the denoiser's parameters at the end of training.
+            Defaults to a folder in the current directory called weights (the folder will be created if it does not exist).
+    """
+    diffusion.train()
+    loss_record_by_epoch = []
+    
+    # If using a CUDA device, set up mixed precision training.
+    scaler = torch.GradScaler('cuda') if device.type == 'cuda' else None
+    
+    # Create dictionary to save model parameters
+    checkpoint = {
+        "diffusion_state_dict": diffusion.state_dict(),
+        "hparams": {
+            "timesteps": diffusion.timesteps,
+            "beta_start": 1e-4,
+            "beta_end": 0.02,
+            "schedule": diffusion.schedule,
+            # Hyperparameters for the denoiser network:
+            "image_size": diffusion.denoise_fn.image_size,
+            "patch_size": diffusion.denoise_fn.patch_size,
+            "in_channels": diffusion.denoise_fn.in_channels,
+            "emb_dim": diffusion.denoise_fn.emb_dim,
+            "depth": diffusion.denoise_fn.depth,
+            "nheads": diffusion.denoise_fn.nheads,
+            "mlp_ratio": diffusion.denoise_fn.mlp_ratio,
+            "time_emb_dim": diffusion.denoise_fn.time_emb_dim,
+        }
+    }    
+    
+    time_weights = time_weights.float().to(device)
+    
+    for epoch in range(epochs):
+        epoch_loss = 0.0
+        # Wrap the dataloader with tqdm for progress monitoring.
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}", leave=True)
+        
+        for batch_idx, batch in enumerate(progress_bar):
+            batch = batch.to(device)
+            # Sample random timesteps for each image in the batch.
+            t = torch.multinomial(time_weights, batch.size(0), replacement=True)
             
             optimizer.zero_grad()
 
