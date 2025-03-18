@@ -52,7 +52,7 @@ The paucity of images in our dataset leads to sampling issues during training, w
 
 We observe substantial improvements in the empirical performance of the model with this minor modification. In fact, the harmonic mean of the variance schedule is quite small `harmonic_mean = tensor(0.1072)` and one might think to simply try generating images with `torch.zeros()`. The results differ slightly and seem to favor the noisy input.
 
-(INCLUDE TWO ROWS FOR COMPARISON)
+(INCLUDE THREE ROWS FOR COMPARISON)
 
 In principal, the same issue applies to the channel means of the noise. One can shift the mean to compensate for this, but we did not find any improvements in performance for various approaches. We document our attempts and the outcomes below: for each timestep, we start by computing the arithmetic mean over each channel for each image in the dataset (the resulting tensor `forward_statistics` has shape (timesteps, channels, W, H))
 
