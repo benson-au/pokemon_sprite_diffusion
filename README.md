@@ -1,4 +1,4 @@
-# Pok&eacute;mon sprite diffusion ![My Animation](./images/1.gif)![My Animation](./images/2.gif)![My Animation](./images/3.gif)![My Animation](./images/10.gif)
+# Pok&eacute;mon sprite diffusion ![My Animation](./images/1.gif)![My Animation](./images/2.gif)![My Animation](./images/3.gif)![My Animation](./images/8.gif)![My Animation](./images/9.gif)![My Animation](./images/10.gif)![My Animation](./images/12.gif)
 
 We implement a simple version of the diffusion model from
 
