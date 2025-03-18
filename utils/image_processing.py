@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import torch
 from torchvision import transforms
 from tqdm import tqdm
+import time
 
 # Configure logging
 logging.basicConfig(
@@ -258,6 +259,42 @@ def batch_to_pil(
             img.save(output_path, file_format)
         
     return pil_images
+
+def pils_to_gif(
+    frames: List[Image.Image],
+    filename: Optional[str] = None,
+    duration: int = 200,
+    loop: int = 0
+) -> None:
+    """
+    Converts a list of PIL images to a GIF.
+    
+    Args:
+        frames (List[Image.Image]): A list of images to be overlaid into a GIF.
+        filename (Optional[str], optional): The filename of the GIF.
+            If not provided, the file name will be the time of creation.
+            If provided, the time will not be added to the file name.
+        file_format (Optional[str], optional): The format for the PIL images if they are to be saved (e.g., "PNG" or "JPEG").
+        base_file_name (Optional[str], optional): The base file name for the PIL images if they are to be saved.
+            PIL images will be saved as f"{base_file_name}_{idx:03d}.{file_format.lower()}".
+    
+    Returns:
+        List[Image.Image]: A list of PIL images.
+    """    
+    logdir = "./"
+    if filename:
+        filepath = os.path.join(logdir, filename + "_" + '.gif')
+    else:
+        filepath = os.path.join(logdir, 'animation_' + time.strftime("%d-%m-%Y_%H-%M-%S") + '.gif')
+    
+    frames[0].save(
+        filepath,
+        format='GIF',
+        append_images=frames[1:],
+        save_all=True,
+        duration=duration,
+        loop=loop
+    )
 
 # Testing block
 if __name__ == "__main__":
