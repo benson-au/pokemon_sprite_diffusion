@@ -420,8 +420,8 @@ class GaussianDiffusion(nn.Module):
             noise = torch.randn_like(x)
             x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
             
-            if ((t+1) % rate == 0) or ((t+1) == self.timesteps):
-                progression.append(x)
+            #if ((t+1) % rate == 0) or ((t+1) == self.timesteps):
+            progression.append(x)
         
         if return_pil:
             return batch_to_pil(torch.stack(progression))
