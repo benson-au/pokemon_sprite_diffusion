@@ -388,9 +388,11 @@ class GaussianDiffusion(nn.Module):
             return [xt.squeeze(0) for xt in progression]
         else:
             return x.squeeze(0)
-    def forward_diffusion_cascade(
+            
+        def forward_diffusion_cascade(
         self,
         x0: torch.Tensor,
+        device: torch.device,
         rate: int = 100,
         return_pil: bool = False,
     ) -> Union[List[torch.Tensor], List[Image.Image]]:
@@ -406,8 +408,6 @@ class GaussianDiffusion(nn.Module):
             progression (List[torch.Tensor]): A list containing the periodic frames from the forward diffusion.
         """
         
-        assert self.timesteps % rate == 0, "Can only sample periodically if the period divides the total number of timesteps"
-        
         x = x0.to(device)
         
         progression = [x]
@@ -420,7 +420,7 @@ class GaussianDiffusion(nn.Module):
             noise = torch.randn_like(x0)
             x = sqrt_one_minus_betas[t]*x + self.betas[t]*noise
             
-            if t+1 % rate == 0:
+            if t+1 % rate == 0 or t+1 == self.timesteps:
                 progression.append(x)
         
         if return_pil:
