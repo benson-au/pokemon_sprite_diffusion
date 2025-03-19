@@ -410,31 +410,23 @@ class GaussianDiffusion(nn.Module):
         
         x = x0.to(device)
         
-        progression = [x]
-
-        print('x', x.device)
+        progression = [x]     
         
-        # sqrt_betas = torch.sqrt(self.betas)
-        # one_minus_betas = 1 - self.betas
-        # sqrt_one_minus_betas = torch.sqrt(one_minus_betas)
+        sqrt_betas = torch.sqrt(self.betas)
+        one_minus_betas = 1 - self.betas
+        sqrt_one_minus_betas = torch.sqrt(one_minus_betas)
 
-        # print('sqrt_betas', sqrt_betas.device)
-        # print('one_minus_betas', one_minus_betas.device)
-        # print('sqrt_one_minus', sqrt_one_minus_betas.device)
-        # noise = torch.randn_like(x)
-        # print(noise.device)
-        # for t in range(self.timesteps):
-        #     noise = torch.randn_like(x)
-        #     print(noise.device)
-        #     x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
+        for t in range(self.timesteps):
+            noise = torch.randn_like(x)
+            x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
             
-        #     if t+1 % rate == 0 or t+1 == self.timesteps:
-        #         progression.append(x)
+            if t+1 % rate == 0 or t+1 == self.timesteps:
+                progression.append(x)
         
-        # if return_pil:
-        #     return batch_to_pil(torch.cat(progression, dim=0))
+        if return_pil:
+            return batch_to_pil(torch.cat(progression, dim=0))
         
-        # return progression
+        return progression
 
 def train_diffusion(
     diffusion: GaussianDiffusion,
