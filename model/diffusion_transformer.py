@@ -388,7 +388,46 @@ class GaussianDiffusion(nn.Module):
             return [xt.squeeze(0) for xt in progression]
         else:
             return x.squeeze(0)
-                
+    def forward_diffusion_cascade(
+        self,
+        x0: torch.Tensor,
+        rate: int = 100,
+        return_pil: bool = False,
+    ) -> Union[List[torch.Tensor], List[Image.Image]]:
+        """
+        Compute the forward diffusion of a single image tensor step by step starting from x0.
+        
+        Args:
+            x0 (torch.Tensor): The original image.
+            rate (int): Saves a frame every {rate} timesteps.
+            return_pil (bool, Optional): If True, converts the denoised tensors to PIL images.
+                Defaults to False.
+        Returns:
+            progression (List[torch.Tensor]): A list containing the periodic frames from the forward diffusion.
+        """
+        
+        assert self.timesteps % rate == 0, "Can only sample periodically if the period divides the total number of timesteps"
+        
+        x = x0.to(device)
+        
+        progression = [x]
+        
+        sqrt_betas = torch.sqrt(self.betas)
+        one_minus_betas = 1 - self.betas
+        sqrt_one_minus_betas = torch.sqrt(one_minus_betas)
+        
+        for t in range(self.timesteps):
+            noise = torch.randn_like(x0)
+            x = sqrt_one_minus_betas[t]*x + self.betas[t]*noise
+            
+            if t+1 % rate == 0:
+                progression.append(x)
+        
+        if return_pil:
+            return batch_to_pil(torch.cat(progression, dim=0))
+        
+        return progression
+
 def train_diffusion(
     diffusion: GaussianDiffusion,
     dataloader: DataLoader,
