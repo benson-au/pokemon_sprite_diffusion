@@ -53,11 +53,7 @@ The paucity of images in our dataset leads to sampling issues during training, w
   noise *= torch.sqrt(harmonic_mean)
 </pre>
 
-We observe substantial improvements in the empirical performance of the model with this minor modification.
-
-(INCLUDE ROWS OF VARIANCE FOR COMPARISON)
-
-In principal, the same issue applies to the channel means of the noise. One can shift the mean to compensate for this, but we did not find any improvements in performance for various approaches. We document our attempts and the outcomes below: for each timestep, we start by computing the arithmetic mean over each channel for each image in the dataset (the resulting tensor `forward_statistics` has shape (timesteps, channels, W, H))
+We observe substantial improvements in the empirical performance of the model with this minor modification. In principal, the same issue applies to the channel means of the noise. One can shift the mean to compensate for this, but we did not find any improvements in performance for various approaches. We document our attempts and the outcomes below: for each timestep, we start by computing the arithmetic mean over each channel for each image in the dataset (the resulting tensor `forward_statistics` has shape (timesteps, channels, W, H))
 
 - Approach 1: compute the arithmetic mean over the timesteps `forward_statistics.mean(dim=0)`. Using this as the mean of our noise created too large of a shift and resulted in entirely white images. Note that `forward_statistics.mean() = tensor(0.2494)`.
 - Approach 2: compute the harmonic mean over the timesteps `1/((1/forward_statistics).mean(dim=0))`. The resulting tensor has `.abs().max() = tensor(4.3705e-05)` and does not produce noticeable differences during inference.
