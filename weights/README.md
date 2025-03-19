@@ -1,3 +1,3 @@
 ## Weights
 
-The `weights/` folder contains the weights of the various denoising networks that we trained.
+The `weights/` folder contains the parameters of the model that we trained.
