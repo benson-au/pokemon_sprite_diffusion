@@ -389,7 +389,7 @@ class GaussianDiffusion(nn.Module):
         else:
             return x.squeeze(0)
             
-        def forward_diffusion_cascade(
+    def forward_diffusion_cascade(
         self,
         x0: torch.Tensor,
         device: torch.device,
