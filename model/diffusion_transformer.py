@@ -411,13 +411,18 @@ class GaussianDiffusion(nn.Module):
         x = x0.to(device)
         
         progression = [x]
+
+        print(x.device)
         
         sqrt_betas = torch.sqrt(self.betas)
         one_minus_betas = 1 - self.betas
         sqrt_one_minus_betas = torch.sqrt(one_minus_betas)
+
+        print(sqrt_betas.device, one_minus_betas.device, sqrt_one_minus_betas.device)
         
         for t in range(self.timesteps):
-            noise = torch.randn_like(x0, device=device)
+            noise = torch.randn_like(x)
+            print(noise.device)
             x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
             
             if t+1 % rate == 0 or t+1 == self.timesteps:
