@@ -419,19 +419,20 @@ class GaussianDiffusion(nn.Module):
         sqrt_one_minus_betas = torch.sqrt(one_minus_betas)
 
         print(sqrt_betas.device, one_minus_betas.device, sqrt_one_minus_betas.device)
-        
-        for t in range(self.timesteps):
-            noise = torch.randn_like(x)
-            print(noise.device)
-            x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
+        noise = torch.randn_like(x)
+        print(noise.device)
+        # for t in range(self.timesteps):
+        #     noise = torch.randn_like(x)
+        #     print(noise.device)
+        #     x = sqrt_one_minus_betas[t]*x + sqrt_betas[t]*noise
             
-            if t+1 % rate == 0 or t+1 == self.timesteps:
-                progression.append(x)
+        #     if t+1 % rate == 0 or t+1 == self.timesteps:
+        #         progression.append(x)
         
-        if return_pil:
-            return batch_to_pil(torch.cat(progression, dim=0))
+        # if return_pil:
+        #     return batch_to_pil(torch.cat(progression, dim=0))
         
-        return progression
+        # return progression
 
 def train_diffusion(
     diffusion: GaussianDiffusion,
