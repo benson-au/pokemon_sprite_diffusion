@@ -424,7 +424,7 @@ class GaussianDiffusion(nn.Module):
                 progression.append(x)
         
         if return_pil:
-            return batch_to_pil(torch.cat(progression, dim=0))
+            return batch_to_pil(torch.stack(progression))
         
         return progression
 
