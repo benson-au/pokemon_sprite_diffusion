@@ -19,8 +19,6 @@ Contrary to the [motto](https://www.youtube.com/watch?v=R4GIyJxvk94) from the fi
 
 ## Model generations
 
-Insert table of reverse diffusion samples (x-axis: timesteps, y-axis: model epochs) 
-
 ## Model parameters
 
 #### DiffusionTransformer parameters
