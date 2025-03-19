@@ -19,6 +19,8 @@ Contrary to the [motto](https://www.youtube.com/watch?v=R4GIyJxvk94) from the fi
 
 ## Model generations
 
+We include some model generations below. See [here](https://github.com/benson-au/pokemon_sprite_diffusion/tree/main/images) for more.
+
 ## Model parameters
 
 #### DiffusionTransformer parameters
