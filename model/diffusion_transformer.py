@@ -395,7 +395,7 @@ class GaussianDiffusion(nn.Module):
         device: torch.device,
         rate: int = 100,
         return_pil: bool = False,
-    ) -> Union[List[torch.Tensor], List[Image.Image]]:
+    ):# -> Union[List[torch.Tensor], List[Image.Image]]:
         """
         Compute the forward diffusion of a single image tensor step by step starting from x0.
         
@@ -424,8 +424,10 @@ class GaussianDiffusion(nn.Module):
             progression.append(x)
         
         if return_pil:
-            return batch_to_pil(torch.stack(progression))
-        return progression
+            return list(range(self.timesteps)), sqrt_betas, one_minus_betas, sqrt_one_minus_betas
+            #return batch_to_pil(torch.stack(progression))
+        #return progression
+        return list(range(self.timesteps)), sqrt_betas, one_minus_betas, sqrt_one_minus_betas
 
 def train_diffusion(
     diffusion: GaussianDiffusion,
