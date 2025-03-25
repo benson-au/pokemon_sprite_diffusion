@@ -295,6 +295,28 @@ def pils_to_gif(
         duration=duration,
         loop=loop
     )
+    
+def pil_grid(
+    images: List[Image.Image], 
+    cols: int
+) -> Image.Image:
+    """
+    Combines a list of PIL images into a single PIL image.
+    
+    Args:
+        images (List[Image.Image]): A list of images to be concatenated into a grid.
+        cols (int): The number of columns in the grid.
+        
+    Returns:
+        Image.Image: A PIL image.
+    """    
+    w, h = images[0].size
+    rows = (len(images) + cols - 1) // cols
+    canvas = Image.new("RGB", (cols * w, rows * h))
+    for idx, img in enumerate(images):
+        x, y = (idx % cols) * w, (idx // cols) * h
+        canvas.paste(img, (x, y))
+    return canvas
 
 # Testing block
 if __name__ == "__main__":
