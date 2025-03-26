@@ -2,7 +2,7 @@ import io
 import os
 import logging
 from PIL import Image
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 import torch
 from torchvision import transforms
 from tqdm import tqdm
