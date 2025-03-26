@@ -1,3 +1,7 @@
+<a href="https://colab.research.google.com/drive/1mjJbx9ggqukdkOdj923TWu0f4Anqstzu?usp=sharing" target="_blank">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
 # Pok&eacute;mon sprite diffusion
 ![My Animation](./images/gifs/1.gif)![My Animation](./images/gifs/2.gif)![My Animation](./images/gifs/3.gif)![My Animation](./images/gifs/8.gif)![My Animation](./images/gifs/9.gif)![My Animation](./images/gifs/10.gif)![My Animation](./images/gifs/12.gif)![My Animation](./images/gifs/13.gif)![My Animation](./images/gifs/14.gif)![My Animation](./images/gifs/5.gif)
 
